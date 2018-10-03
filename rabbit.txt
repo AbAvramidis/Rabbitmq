@@ -1,0 +1,86 @@
+https://marjomercado.wordpress.com/2011/07/18/how-to-install-rabbitmq-server-and-pika-on-ubuntu-10-10/
+https://www.unixmen.com/install-erlang-elixir-centos-7/
+
+https://dzone.com/articles/getting-started-with-rabbitmq-cloud-based-message
+***GReat***
+
+----------------------------
+sudo apt-get install python-pika
+or, using pip:
+
+sudo pip install pika
+
+sudo yum install wget epel-release git nano curl which socat logrotate
+yum install gcc gcc-c++ glibc-devel make ncurses-devel openssl-devel autoconf java-1.8.0-openjdk-devel git wget wxBase.x86_64
+
+$ wget https://packages.erlang-solutions.com/erlang-solutions-1.0-1.noarch.rpm
+$ sudo rpm -Uvh erlang-solutions-1.0-1.noarch.rpm
+$ sudo yum install erlang
+$ sudo yum install esl-erlang
+
+$ sudo yum install rabbitmq-server
+
+sudo systemctl status rabbitmq-server.service
+sudo systemctl enable rabbitmq-server.service
+sudo systemctl start rabbitmq-server.service
+
+sudo yum install python-pip
+
+--------------------------------------------------
+
+10.0.10.10  producer.local
+10.0.10.11  consumer.local
+
+
+-------------------------------------------------------
+Code Producer: 
+
+
+#!/usr/bin/env python
+import pika
+import sys
+
+connection = pika.AsyncoreConnection(pika.ConnectionParameters(host='localhost'))
+channel = connection.channel()
+
+channel.queue_declare(queue='task_queue', durable=True)
+
+message = ' '.join(sys.argv[1:]) or "Hello World!"
+channel.basic_publish(exchange='',
+                      routing_key='task_queue',
+                      body=message,
+                      properties=pika.BasicProperties(
+                         delivery_mode = 2, # make message persistent
+                      ))
+print(" [x] Sent %r" % message)
+connection.close()
+
+
+Code consumer: 
+
+#!/usr/bin/env python
+import pika
+import time
+
+connection = pika.AsyncoreConnection(pika.ConnectionParameters(host='127.0.0.1'))
+channel = connection.channel()
+
+channel.queue_declare(queue='task_queue', durable=True)
+print ' [*] Waiting for messages. To exit press CTRL+C'
+
+def callback(ch, method, properties, body):
+    print(" [x] Received %r" % body)
+    time.sleep(body.count(b'.'))
+    print " [x] Done"
+    ch.basic_ack(delivery_tag = method.delivery_tag)
+
+channel.basic_qos(prefetch_count=2)
+channel.basic_consume(callback,
+                      queue='task_queue')
+
+pika.asyncore_loop()
+
+--------------------------------------------------------------
+
+sudo pip2 install pika --upgrade
+
