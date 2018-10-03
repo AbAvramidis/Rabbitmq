@@ -2,19 +2,21 @@
 
 Queue code:
 
-#!/usr/bin/env python
+```#!/usr/bin/env python
 import pika
 import sys
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
 channel.queue_declare(queue='task_queue', durable=True)
 
+```
+
 ***also run the commands:
  rabbitmqctl set_permissions -p "/" "user" ".*"  ".*" ".*"
  rabbitmqctl add_user user user 
 
 Sender code:
-
+```
 #!/usr/bin/env python
 import pika
 import sys
@@ -32,9 +34,9 @@ channel.basic_publish(exchange='',
                       ))
 print(" [x] Sent %r" % message)
 connection.close()
-
+```
 Worker Code:
-
+```
 #!/usr/bin/env python
 import pika
 import time
@@ -53,3 +55,4 @@ channel.basic_qos(prefetch_count=1)
 channel.basic_consume(callback,
                       queue='task_queue')
 channel.start_consuming()
+```
